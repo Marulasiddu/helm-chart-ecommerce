@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    app: {{ .Release.Name }}-frontend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-frontend
+    spec:   
+      containers:
+        - name: ecommerce-frontend-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.frontendPort }}
+          env:  # Ensure `env` is under the container spec
+            - name: REACT_APP_BACKEND_URL
+              value: "{{ .Values.env.REACT_APP_BACKEND_URL }}" 
+          securityContexts:
+            runAsUser: 0        
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    app: {{ .Release.Name }}-backend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-backend
+    spec: 
+      nodeName: ip-10-0-1-89.ec2.internal     
+      containers:
+        - name: ecommerce-backend-app
+          image: "{{ .Values.backend.repository }}:{{ .Values.backend.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.backendPort }}
+          
